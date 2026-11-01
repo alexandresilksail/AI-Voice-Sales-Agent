@@ -1,0 +1,12 @@
+﻿node_modules/
+dist/
+outputs/
+work/
+local-runtime/
+public/vad/
+.env
+.env.*
+!.env.example
+*.log
+test-results/
+playwright-report/

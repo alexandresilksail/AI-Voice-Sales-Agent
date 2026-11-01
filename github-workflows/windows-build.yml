@@ -1,0 +1,48 @@
+name: Build Windows desktop
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Build NSIS installer
+        run: npm run dist:win
+      - name: Build portable ZIP
+        run: npm run dist:zip
+      - name: Check release files
+        run: npm run verify:package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AI-Voice-Sales-Agent-Windows
+          path: |
+            outputs/AI-Voice-Sales-Agent-Setup-*.exe
+            outputs/AI-Voice-Sales-Agent-Portable-*.zip
+            outputs/package-audit.json
+            LOCAL_OFFLINE_SETUP_CN.md
+            TEST_REPORT.md
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          prerelease: true
+          name: LOCAL_OFFLINE desktop preview
+          body: |
+            Windows desktop preview with local Whisper/Ollama/Piper integration and bundled Silero VAD.
+            Install local runtimes and models before using voice. No API key is required.
+            Full microphone conversation and disconnected-internet acceptance are not yet verified.
+            See LOCAL_OFFLINE_SETUP_CN.md and TEST_REPORT.md before running.
+          files: |
+            outputs/AI-Voice-Sales-Agent-Setup-*.exe
+            outputs/AI-Voice-Sales-Agent-Portable-*.zip
+            outputs/package-audit.json
+            LOCAL_OFFLINE_SETUP_CN.md
+            TEST_REPORT.md

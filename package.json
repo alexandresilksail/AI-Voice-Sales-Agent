@@ -1,0 +1,86 @@
+{
+  "name": "ai-voice-sales-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Windows desktop demonstration of local offline AI voice sales",
+  "author": "AI Voice Sales Agent Demo",
+  "main": "dist/main/main/main.js",
+  "scripts": {
+    "assets": "node scripts/assets.cjs",
+    "dev": "node scripts/dev.cjs",
+    "typecheck": "tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
+    "build": "npm run assets && tsc -p tsconfig.main.json && vite build",
+    "start": "electron .",
+    "test:unit": "vitest run",
+    "test:desktop": "npm run build && playwright test",
+    "test": "npm run typecheck && npm run test:unit && npm run test:desktop",
+    "dist:win": "npm run build && electron-builder --win nsis --x64",
+    "dist:portable": "npm run build && electron-builder --win portable --x64",
+    "dist:zip": "node scripts/portable-zip.cjs",
+    "verify:package": "node scripts/verify-package.cjs"
+  },
+  "dependencies": {
+    "@ricky0123/vad-web": "0.0.31",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "electron": "45.2.1",
+    "electron-builder": "26.18.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  },
+  "build": {
+    "appId": "com.demo.aivoicesalesagent",
+    "productName": "AI Voice Sales Agent",
+    "copyright": "Copyright (c) 2026 AI Voice Sales Agent Demo",
+    "directories": {
+      "output": "outputs",
+      "buildResources": "assets"
+    },
+    "files": [
+      "dist/**/*",
+      "assets/icon.ico",
+      "assets/icon.png",
+      "package.json",
+      "!**/*.map",
+      "!**/.env*",
+      "!node_modules/**/*"
+    ],
+    "asar": true,
+    "forceCodeSigning": false,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "artifactName": "AI-Voice-Sales-Agent-Setup-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": false,
+      "deleteAppDataOnUninstall": false,
+      "uninstallDisplayName": "AI Voice Sales Agent"
+    },
+    "electronDist": "node_modules/electron/dist",
+    "disableAsarIntegrity": true,
+    "portable": {
+      "artifactName": "AI-Voice-Sales-Agent-Portable-${version}-${arch}.${ext}"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+﻿const {spawn,spawnSync}=require('node:child_process');const path=require('node:path');const root=path.resolve(__dirname,'..');
+function run(script,args=[]){const result=spawnSync(process.execPath,[script,...args],{cwd:root,stdio:'inherit',windowsHide:true});if(result.status!==0)process.exit(result.status||1);}
+run(path.join(__dirname,'assets.cjs'));run(path.join(root,'node_modules/typescript/bin/tsc'),['-p','tsconfig.main.json']);
+const vite=spawn(process.execPath,[path.join(root,'node_modules/vite/bin/vite.js')],{cwd:root,stdio:'inherit',windowsHide:true});let electron;
+const cleanup=()=>{electron?.kill();vite.kill();};process.on('SIGINT',()=>{cleanup();process.exit(0);});process.on('SIGTERM',()=>{cleanup();process.exit(0);});process.on('exit',cleanup);
+(async()=>{for(let i=0;i<100;i++){try{const r=await fetch('http://127.0.0.1:5173');if(r.ok)break;}catch{}await new Promise(resolve=>setTimeout(resolve,100));if(i===99)throw new Error('Vite did not start.');}electron=spawn(require('electron'),['.'],{cwd:root,stdio:'inherit',env:{...process.env,SALES_AGENT_DEV:'1'},windowsHide:true});electron.on('exit',code=>{cleanup();process.exit(code||0);});})().catch(error=>{console.error(error.message);cleanup();process.exit(1);});
