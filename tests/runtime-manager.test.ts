@@ -3,10 +3,18 @@ import {mkdtemp,writeFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
-import {verifyRuntimeFiles} from '../src/main/runtime-manager';
+import {verifyRuntimeFiles,loadRuntimeDirectory} from '../src/main/runtime-manager';
 const dirs:string[]=[];
 afterEach(async()=>{await Promise.all(dirs.splice(0).map(path=>rm(path,{recursive:true,force:true})));});
 describe('local runtime integrity',()=>{
+ it('rebases a copied runtime manifest and lets missing models be diagnosed by runtime checks',async()=>{
+  const root=await mkdtemp(join(tmpdir(),'sales-agent-relocate-'));dirs.push(root);const previous=join(tmpdir(),'previous-install');
+  await writeFile(join(root,'runtime-config.json'),JSON.stringify({runtimeDirectory:previous,whisperPath:join(previous,'whisper','whisper-cli.exe'),whisperModel:join(previous,'models','ggml-base.bin'),piperPath:'piper/piper.exe',piperModel:'models/voice.onnx'}));
+  const config=await loadRuntimeDirectory(root);expect(config.whisperPath).toBe(join(root,'whisper','whisper-cli.exe'));expect(config.piperModel).toBe(join(root,'models','voice.onnx'));
+ });
+ it('provides a setup instruction when the chosen directory has no manifest',async()=>{
+  const root=await mkdtemp(join(tmpdir(),'sales-agent-empty-'));dirs.push(root);await expect(loadRuntimeDirectory(root)).rejects.toThrow('INSTALL-LOCAL-RUNTIME.cmd');
+ });
  it('detects model corruption rather than accepting only a file name',async()=>{
   const root=await mkdtemp(join(tmpdir(),'sales-agent-integrity-'));dirs.push(root);
   await writeFile(join(root,'model.bin'),'verified model fixture');

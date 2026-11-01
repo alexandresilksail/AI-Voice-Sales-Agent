@@ -17,6 +17,8 @@ export interface SalesBridge {
   testConnection(): Promise<{ok: boolean; message: string}>;
   checkLocalRuntime(): Promise<{name:string;ok:boolean;detail:string}[]>;
   loadRuntimeDirectory(directory:string): Promise<PublicSettings>;
+  chooseRuntimeDirectory(): Promise<PublicSettings|null>;
+  openLocalSetup(): Promise<void>;
   verifyRuntimeFiles(): Promise<{name:string;ok:boolean;detail:string}[]>;
   beginLocalTurn(turnId:string): Promise<void>;
   localChat(turnId:string,messages:Array<{role:string;content:string}>,onToken:(token:string)=>void): Promise<{text:string}>;

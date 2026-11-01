@@ -6,10 +6,12 @@ Windows Electron + React desktop demonstration. No Gemini/OpenAI account or API 
 
 ## Launch
 
-- Installer: `outputs/AI-Voice-Sales-Agent-Setup-0.1.0-x64.exe`.
-- Portable edition: extract `outputs/AI-Voice-Sales-Agent-Portable-0.1.0-x64.zip`, then run `AI Voice Sales Agent.exe`. Keep `portable.flag` beside it to store data locally. The earlier single-file portable wrapper failed its launch check and is not the recommended deliverable.
+- Installer: `outputs/AI-Voice-Sales-Agent-Setup-0.1.1-x64.exe`.
+- Portable edition: extract `outputs/AI-Voice-Sales-Agent-Portable-0.1.1-x64.zip`, then run `AI Voice Sales Agent.exe`. Keep `portable.flag` beside it to store data locally. The earlier single-file portable wrapper failed its launch check and is not the recommended deliverable.
 - Source: Node.js/npm, then `npm ci`, `npm run build`, `npm start`. `START.cmd` starts development mode.
 - Local runtime setup: follow [LOCAL_OFFLINE_SETUP_CN.md](LOCAL_OFFLINE_SETUP_CN.md), load the runtime directory in Settings, then choose **Check local runtime** and **Start Conversation**.
+
+If startup reports missing Ollama/Whisper/Piper, choose **Open Settings → Open setup folder** and run `INSTALL-LOCAL-RUNTIME.cmd`. Models and Ollama are separate installations, not included in the desktop installer. Version 0.1.1 migrates old Gemini settings without treating them as damaged orders and supports copied runtime directories.
 
 ## Local voice design
 
@@ -40,4 +42,5 @@ Windows 10 was used for automated desktop checks. Windows 11 and real audio acce
 
 Repository: https://github.com/alexandresilksail/AI-Voice-Sales-Agent . Source is committed without dependencies, model files, user orders or secrets. Windows binaries exceed GitHub's ordinary 100 MB file limit and belong in Releases. A Windows build workflow template is provided in `github-workflows/windows-build.yml`. It is not active because the upload credential does not grant workflow permission. A repository owner can copy it to `.github/workflows/windows-build.yml` through GitHub to enable manual builds and tag prereleases. A first voice run still requires locally installed runtime/model files.
 
-For future upload steps, see [GITHUB_UPLOAD_CN.md](GITHUB_UPLOAD_CN.md) or run `PUSH-GITHUB.cmd` after signing in to your GitHub account. Download the current preview from [GitHub Releases](https://github.com/alexandresilksail/AI-Voice-Sales-Agent/releases/tag/local-offline-preview-20261101).
+For future upload steps, see [GITHUB_UPLOAD_CN.md](GITHUB_UPLOAD_CN.md) or run `PUSH-GITHUB.cmd` after signing in to your GitHub account. Download the current preview from [GitHub Releases](https://github.com/alexandresilksail/AI-Voice-Sales-Agent/releases/tag/local-offline-preview-0.1.1).
+

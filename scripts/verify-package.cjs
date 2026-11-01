@@ -1,5 +1,6 @@
 const fs=require('node:fs');const path=require('node:path');const crypto=require('node:crypto');const asar=require('@electron/asar');
 const root=path.resolve(__dirname,'..'),out=path.join(root,'outputs'),archive=path.join(out,'win-unpacked','resources','app.asar');
+const version=require('../package.json').version;
 const entries=asar.listPackage(archive).map(name=>name.replace(/^[\\/]+/,'')).filter(name=>!asar.statFile(archive,name).files);
 const forbidden=entries.filter(name=>/(?:^|[\\/])(?:\.env(?:\.[^\\/]+)?|tests?|src|scripts)(?:$|[\\/])|\.map$/i.test(name));
 if(forbidden.length)throw new Error('Unexpected development files in package: '+forbidden.join(', '));
@@ -8,7 +9,8 @@ const required=['dist/main/main/main.js','dist/main/main/preload.js','dist/main/
 for(const name of entries.filter(name=>/^dist[\\/]/.test(name))){const source=path.join(root,name);if(!fs.existsSync(source)||!asar.extractFile(archive,name).equals(fs.readFileSync(source)))throw new Error('Package differs from current build: '+name);}
 const renderer=entries.filter(name=>/^dist[\\/]renderer[\\/].*\.(js|html)$/.test(name)).map(name=>asar.extractFile(archive,name).toString('utf8')).join('\n');
 if(/process\.env\.(?:OPENAI|GEMINI)_API_KEY|VITE_(?:OPENAI|GEMINI)_API_KEY|encryptedGeminiKey/.test(renderer))throw new Error('Sensitive main-process configuration appeared in renderer.');
-const installers=fs.readdirSync(out).filter(name=>/^AI-Voice-Sales-Agent-Setup-.*\.exe$/.test(name));if(installers.length!==1)throw new Error('Expected one Windows setup installer.');
-const portable=fs.readdirSync(out).filter(name=>/^AI-Voice-Sales-Agent-Portable-.*\.zip$/.test(name));if(portable.length!==1)throw new Error('Expected one Windows portable ZIP.');const deliverables=[path.join('win-unpacked','AI Voice Sales Agent.exe'),...installers,...portable];const files=deliverables.map(file=>{const data=fs.readFileSync(path.join(out,file));const expected=file.endsWith('.zip')?'PK':'MZ';if(data.toString('ascii',0,2)!==expected)throw new Error('Invalid Windows deliverable: '+file);return {file,bytes:data.length,sha256:crypto.createHash('sha256').update(data).digest('hex')};});
+const installers=[`AI-Voice-Sales-Agent-Setup-${version}-x64.exe`],portable=[`AI-Voice-Sales-Agent-Portable-${version}-x64.zip`];
+for(const file of ['INSTALL-LOCAL-RUNTIME.cmd','install-local-runtime.ps1','start-local-ollama.ps1','LOCAL_OFFLINE_SETUP_CN.md'])if(!fs.existsSync(path.join(out,'win-unpacked','resources','local-setup',file)))throw new Error('Missing packaged setup helper: '+file);
+const deliverables=[path.join('win-unpacked','AI Voice Sales Agent.exe'),...installers,...portable];const files=deliverables.map(file=>{const data=fs.readFileSync(path.join(out,file));const expected=file.endsWith('.zip')?'PK':'MZ';if(data.toString('ascii',0,2)!==expected)throw new Error('Invalid Windows deliverable: '+file);return {file,bytes:data.length,sha256:crypto.createHash('sha256').update(data).digest('hex')};});
 const report={checkedAt:new Date().toISOString(),packagedFiles:entries.length,secretScan:'PASS: no permanent key patterns or development secrets found',developmentFiles:'PASS: no source, tests, env files, or source maps',rendererIsolation:'PASS: no permanent-key environment access or encrypted settings payload in renderer',executables:files,installerExecution:'Not checked by this static audit'};
 fs.writeFileSync(path.join(out,'package-audit.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));

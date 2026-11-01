@@ -69,8 +69,8 @@ export async function checkRuntime(c: LocalRuntimeConfig): Promise<RuntimeCheck[
     checks.push({name:'Ollama model', ok:models.includes(c.ollamaModel), detail:models.includes(c.ollamaModel) ? c.ollamaModel : 'Install locally: ollama pull ' + c.ollamaModel});
     if(models.includes(c.ollamaModel)){await requireLocalModel(c);}
   } catch (error) {
-    checks.push({name:'Ollama',ok:false,detail:error instanceof Error ? error.message : 'Start Ollama at 127.0.0.1:11434'});
-    checks.push({name:'Ollama model',ok:false,detail:'Check after Ollama starts.'});
+    checks.push({name:'Ollama',ok:false,detail:'Cannot reach the local service. Install Ollama and start "ollama serve" at 127.0.0.1:11434. '+(error instanceof Error?error.message:'')});
+    checks.push({name:'Ollama model',ok:false,detail:'After starting Ollama, install the local model: ollama pull '+c.ollamaModel});
   }
   checks.push(await executableCheck('whisper.cpp', c.whisperPath));
   checks.push(await fileCheck('Whisper model', c.whisperModel));

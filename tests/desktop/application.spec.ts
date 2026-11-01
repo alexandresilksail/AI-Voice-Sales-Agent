@@ -1,8 +1,23 @@
 import {test,expect,_electron as electron} from '@playwright/test';
-import {mkdtemp,readFile,readdir} from 'node:fs/promises';
+import {mkdtemp,readFile,readdir,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 const desktopArgs=()=>process.env.SALES_AGENT_PACKAGED_EXE?{executablePath:process.env.SALES_AGENT_PACKAGED_EXE,args:['--test-mode']}:{args:[resolve('.'),'--test-mode']};
+
+test('legacy Gemini settings show local setup without an order corruption warning',async()=>{
+  const data=await mkdtemp(join(tmpdir(),'sales-agent-qa-'));
+  await writeFile(join(data,'settings.json'),JSON.stringify({encryptedGeminiKey:'encrypted-migration-fixture'}));
+  await writeFile(join(data,'orders.json'),'[]');
+  const app=await electron.launch({...desktopArgs(),env:{...process.env,SALES_AGENT_TEST_USER_DATA:data,SALES_AGENT_DEV:'0'}});
+  try{
+    const page=await app.firstWindow();await expect(page.getByRole('button',{name:'Start Conversation',exact:true})).toBeVisible();
+    await expect(page.getByText('Previous voice settings were migrated',{exact:false})).toBeVisible();
+    await expect(page.getByText(/damaged|could not be read/)).toHaveCount(0);
+    await page.getByRole('button',{name:'Settings',exact:true}).click();
+    await expect(page.getByRole('heading',{name:'First-time setup'})).toBeVisible();await expect(page.getByRole('button',{name:'Open setup folder',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Choose runtime folder',exact:true})).toBeVisible();
+    expect(await readFile(join(data,'orders.json'),'utf8')).toBe('[]');await page.screenshot({path:'outputs/settings-migration-0.1.1.png'});
+  }finally{await app.close();}
+});
 
 test('offline desktop catalog, price protection and persisted orders',async()=>{
   const data=await mkdtemp(join(tmpdir(),'sales-agent-qa-'));

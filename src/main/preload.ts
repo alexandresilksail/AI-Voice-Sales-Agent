@@ -6,6 +6,8 @@ const bridge: SalesBridge = {
  testConnection:()=>ipcRenderer.invoke('local:check').then((checks:any[])=>({ok:checks.every(x=>x.ok),message:checks.map(x=>(x.ok?'PASS ':'BLOCKED ')+x.name+': '+x.detail).join('\n')})),
  checkLocalRuntime:()=>ipcRenderer.invoke('local:check'),
  loadRuntimeDirectory:directory=>ipcRenderer.invoke('local:load-directory',directory),
+ chooseRuntimeDirectory:()=>ipcRenderer.invoke('local:choose-directory'),
+ openLocalSetup:()=>ipcRenderer.invoke('local:open-setup'),
  verifyRuntimeFiles:()=>ipcRenderer.invoke('local:verify'),
  beginLocalTurn:turnId=>ipcRenderer.invoke('local:begin',turnId),
  cancelLocalTurn:turnId=>ipcRenderer.invoke('local:cancel',turnId),

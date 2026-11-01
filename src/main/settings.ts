@@ -1,4 +1,5 @@
 import {join} from 'node:path';
+import {existsSync,readFileSync,copyFileSync} from 'node:fs';
 import {localOllamaUrl} from './local-runtime';
 import {JsonStore} from './store';
 import type {LocalRuntimeSettings,PublicSettings,SettingsUpdate} from '../shared/types';
@@ -10,8 +11,21 @@ const valid=(value:unknown):value is LocalRuntimeSettings=>{
 };
 export class SettingsService {
   private store:JsonStore<LocalRuntimeSettings>;private settings:LocalRuntimeSettings;
-  constructor(directory:string){this.store=new JsonStore(join(directory,'settings.json'),defaults,valid);const saved=this.store.read();this.settings=defaults();for(const key of Object.keys(this.settings) as Array<keyof LocalRuntimeSettings>){if(saved[key]!==undefined)(this.settings as any)[key]=saved[key];}}
-  get notice(){return this.store.notice;}
+  private migrationNotice:string|null=null;
+  constructor(directory:string){
+    const file=join(directory,'settings.json');this.store=new JsonStore(file,defaults,valid);
+    if(existsSync(file)){
+      let legacy:Record<string,unknown>|null=null;
+      try{const value=JSON.parse(readFileSync(file,'utf8').replace(/^\uFEFF/,''));if(value&&typeof value==='object'&&!Array.isArray(value)&&!valid(value)&&(['GEMINI_LIVE','GEMINI','OPENAI_REALTIME','LOCAL','MOCK'].includes(value.mode)||['encryptedGeminiKey','encryptedOpenAIKey','encryptedApiKey'].some(key=>typeof value[key]==='string')))legacy=value;}catch{/* JsonStore reports unreadable files. */}
+      if(legacy){
+        const next=defaults();for(const key of ['microphoneId','outputId'] as const)if(typeof legacy[key]==='string'&&legacy[key].length>0&&legacy[key].length<=500)next[key]=legacy[key];
+        if(['auto','en','zh'].includes(String(legacy.language)))next.language=legacy.language as LocalRuntimeSettings['language'];
+        copyFileSync(file,file+'.legacy-'+Date.now());this.store.write(next);this.migrationNotice='Previous voice settings were migrated to LOCAL_OFFLINE. Configure local runtimes in Settings. Order history was not changed.';
+      }
+    }
+    const saved=this.store.read();this.settings=defaults();for(const key of Object.keys(this.settings) as Array<keyof LocalRuntimeSettings>){if(saved[key]!==undefined)(this.settings as any)[key]=saved[key];}
+  }
+  get notice(){return this.migrationNotice||this.store.notice;}
   public():PublicSettings{return {...this.settings,hasApiKey:false,keyHint:'',encryptionAvailable:true};}
   config(){return {...this.settings};}
   update(update:SettingsUpdate):PublicSettings{

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.1 — startup setup and settings migration (2026-11-01)
+
+- Migrate recognized legacy cloud settings to LOCAL_OFFLINE, preserve a `.legacy` backup, and leave order files untouched.
+- Distinguish unreadable settings from unreadable order history in recovery messages.
+- Add an actionable startup banner, setup folder entry and native runtime folder picker.
+- Bundle first-time setup helpers and the Chinese guide with the installed application.
+- Use relocatable runtime manifest paths and retain partial config when model downloads fail.
+- Local voice still requires separately installed runtimes/models; this update does not replace them with an online fallback.
+
 ## 0.1.0 — LOCAL_OFFLINE emergency update (2026-11-01)
 
 - Replaced default cloud voice connection with local Whisper/Ollama/Piper orchestration.

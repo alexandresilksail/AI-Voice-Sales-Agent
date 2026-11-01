@@ -1,6 +1,6 @@
 {
   "name": "ai-voice-sales-agent",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "A Windows desktop demonstration of local offline AI voice sales",
   "author": "AI Voice Sales Agent Demo",
@@ -54,6 +54,10 @@
       "!node_modules/**/*"
     ],
     "asar": true,
+    "extraResources": [
+      {"from":"scripts","to":"local-setup","filter":["install-local-runtime.ps1","start-local-ollama.ps1","INSTALL-LOCAL-RUNTIME.cmd"]},
+      {"from":"LOCAL_OFFLINE_SETUP_CN.md","to":"local-setup/LOCAL_OFFLINE_SETUP_CN.md"}
+    ],
     "forceCodeSigning": false,
     "win": {
       "target": [

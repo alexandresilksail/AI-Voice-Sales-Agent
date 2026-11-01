@@ -6,6 +6,10 @@
 
 ## 1. 准备运行时
 
+0.1.1 安装版和绿色版可直接进入 **Settings → Open setup folder**，双击 `INSTALL-LOCAL-RUNTIME.cmd` 查看下载步骤及进度。该入口只打开文件夹，不会静默联网安装。完整安装仍需要模型下载成功，并启动 Ollama、安装 Qwen 模型。
+
+截图中的 `ERR_CONNECTION_REFUSED` 表示本机 11434 端口没有运行 Ollama；`Executable unavailable` 和 `Missing or empty` 分别表示程序路径与模型文件尚未配置。它们是依赖未就绪的真实提示。旧版把 Gemini 设置迁移误报为订单损坏，0.1.1 已修复，不需要删除订单。
+
 在项目目录打开 PowerShell：
 
 ```powershell
@@ -47,7 +51,7 @@ $env:OLLAMA_MODELS="D:\AI-Voice-Runtime\ollama-models"
 ## 3. 设置应用
 
 1. 安装或启动绿色版 EXE，进入 Settings。
-2. 填入 Runtime directory，点击 **Load runtime directory** 导入安装脚本生成的 `runtime-config.json`。目录移动后请手动改为新的绝对路径。
+2. 点击 **Choose runtime folder**，或填写 Runtime directory 后点击 **Load runtime directory**，选择包含 `runtime-config.json` 的目录。0.1.1 支持相对路径及旧清单路径迁移；导入后仍需检查是否缺少模型文件。
 3. 手动安装时直接填写 whisper.cpp executable、Whisper model file、Piper executable、Piper voice model 的绝对路径。
 4. 点击 **Verify file hashes** 校验安装清单；手动文件没有清单时该项会说明缺失，仍可使用单独路径检测。
 5. 选择麦克风、扬声器和识别语言；点击 **Check local runtime**。麦克风检查会申请真实权限；设备存在不代表已验证可听到声音。

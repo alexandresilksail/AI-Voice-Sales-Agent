@@ -6,7 +6,7 @@ if(!fs.existsSync(path.join(folder,'AI Voice Sales Agent.exe')))throw new Error(
 fs.writeFileSync(path.join(folder,'portable.flag'),'Store settings and orders beside this portable application.\n');
 for(const name of ['README.md','LOCAL_OFFLINE_SETUP_CN.md','TEST_REPORT.md'])fs.copyFileSync(path.join(root,name),path.join(folder,name));
 fs.mkdirSync(path.join(folder,'local-setup'),{recursive:true});
-for(const name of ['install-local-runtime.ps1','start-local-ollama.ps1'])fs.copyFileSync(path.join(root,'scripts',name),path.join(folder,'local-setup',name));
+for(const name of ['install-local-runtime.ps1','start-local-ollama.ps1','INSTALL-LOCAL-RUNTIME.cmd'])fs.copyFileSync(path.join(root,'scripts',name),path.join(folder,'local-setup',name));
 if(fs.existsSync(path.join(folder,'AI Voice Sales Agent Data')))throw new Error('Remove personal data from the build folder before archiving.');
 const archive=spawnSync('powershell.exe',['-NoProfile','-Command','Add-Type -AssemblyName System.IO.Compression.FileSystem; if(Test-Path -LiteralPath $env:SALES_ZIP_DESTINATION){Remove-Item -LiteralPath $env:SALES_ZIP_DESTINATION}; [IO.Compression.ZipFile]::CreateFromDirectory($env:SALES_ZIP_SOURCE,$env:SALES_ZIP_DESTINATION,[IO.Compression.CompressionLevel]::Optimal,$false)'],{cwd:folder,windowsHide:true,stdio:'inherit',env:{...process.env,SALES_ZIP_SOURCE:folder,SALES_ZIP_DESTINATION:zip}});
 if(archive.status!==0)throw new Error('Portable ZIP build failed.');

@@ -1,4 +1,4 @@
-import {app,BrowserWindow,ipcMain,protocol,net,session} from 'electron';
+import {app,BrowserWindow,ipcMain,protocol,net,session,shell,dialog} from 'electron';
 import {join,resolve,sep,basename,dirname} from 'node:path';
 import {mkdirSync,existsSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
@@ -46,6 +46,8 @@ function bindIpc(settings:SettingsService,sales:SalesService) {
  handle('sales:tool',(request:ToolRequest)=>sales.tool(request));
  handle('local:check',()=>checkRuntime(settings.config()));
  handle('local:load-directory',async(directory:string)=>settings.update(await loadRuntimeDirectory(directory)));
+ handle('local:choose-directory',async()=>{if(!window)return null;const selection=await dialog.showOpenDialog(window,{title:'Choose the local runtime folder containing runtime-config.json',properties:['openDirectory']});return selection.canceled?null:settings.update(await loadRuntimeDirectory(selection.filePaths[0]));});
+ handle('local:open-setup',async()=>{const directory=app.isPackaged?join(process.resourcesPath,'local-setup'):join(app.getAppPath(),'scripts');const error=await shell.openPath(directory);if(error)throw new Error('Cannot open local setup folder: '+error);});
  handle('local:verify',()=>verifyRuntimeFiles(settings.config().runtimeDirectory));
  handle('local:begin',(turnId:string)=>{if(typeof turnId!=='string'||turnId.length>100)throw new Error('Invalid local turn.');for(const controller of tasks.values())controller.abort();tasks.clear();tasks.set(turnId,new AbortController());sales.begin(sales.snapshot().sessionId,turnId);});
  handle('local:cancel',(turnId:string)=>{tasks.get(turnId)?.abort();tasks.delete(turnId);});

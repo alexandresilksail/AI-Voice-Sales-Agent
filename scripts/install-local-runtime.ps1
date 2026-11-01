@@ -52,6 +52,8 @@ try {
   $piper=Get-ChildItem (Join-Path $runtimeRoot 'piper') -Filter piper.exe -Recurse | Select-Object -First 1
   if(!$piper){throw 'piper.exe was not found in the official archive.'}
   Get-ChildItem (Join-Path $runtimeRoot 'piper') -File -Recurse | ForEach-Object {Record $_.FullName '2023.11.14-2' $piperUrl}
+  # Keep a relocatable partial configuration even if a model download is blocked.
+  @{runtimeDirectory=$runtimeRoot;whisperPath=$whisper.FullName.Substring($runtimeRoot.Length+1);whisperModel='models/ggml-base.bin';piperPath=$piper.FullName.Substring($runtimeRoot.Length+1);piperModel='models/en_US-lessac-medium.onnx';ollamaUrl='http://127.0.0.1:11434';ollamaModel='qwen2.5:3b'} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $runtimeRoot 'runtime-config.json') -Encoding utf8
   if($IncludeOllama) {
     $release=Invoke-RestMethod 'https://api.github.com/repos/ollama/ollama/releases/latest' -TimeoutSec 30
     $asset=$release.assets | Where-Object {$_.name -eq 'ollama-windows-amd64.zip'} | Select-Object -First 1
@@ -69,7 +71,7 @@ try {
   $voice=HuggingFace 'rhasspy/piper-voices' 'en/en_US/lessac/medium/en_US-lessac-medium.onnx' 'models/en_US-lessac-medium.onnx'
   $null=HuggingFace 'rhasspy/piper-voices' 'en/en_US/lessac/medium/en_US-lessac-medium.onnx.json' 'models/en_US-lessac-medium.onnx.json'
   @{version=1;createdAt=[DateTime]::UtcNow.ToString('o');files=@($receipt)} | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $runtimeRoot 'runtime-manifest.json') -Encoding utf8
-  @{runtimeDirectory=$runtimeRoot;whisperPath=$whisper.FullName;whisperModel=$whisperModel;piperPath=$piper.FullName;piperModel=$voice;ollamaUrl='http://127.0.0.1:11434';ollamaModel='qwen2.5:3b'} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $runtimeRoot 'runtime-config.json') -Encoding utf8
+  @{runtimeDirectory=$runtimeRoot;whisperPath=$whisper.FullName.Substring($runtimeRoot.Length+1);whisperModel='models/ggml-base.bin';piperPath=$piper.FullName.Substring($runtimeRoot.Length+1);piperModel='models/en_US-lessac-medium.onnx';ollamaUrl='http://127.0.0.1:11434';ollamaModel='qwen2.5:3b'} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $runtimeRoot 'runtime-config.json') -Encoding utf8
   Status 'Local runtime files' 'Complete'
   Write-Host ('In the app, set Runtime directory to '+$runtimeRoot+' and click Load runtime directory.')
 } catch { Status 'Local setup' ('FAILED: '+$_.Exception.Message); throw }

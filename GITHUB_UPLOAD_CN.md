@@ -4,7 +4,7 @@
 
 本地目录已初始化 Git，main 分支已创建源码提交并绑定 origin。源码不包含 API Key、模型、依赖、订单或大型 EXE。本次发布使用经验证具有仓库写权限的临时认证，凭证不写入仓库；以后更新请使用下面的官方登录流程。
 
-预发布地址：https://github.com/alexandresilksail/AI-Voice-Sales-Agent/releases/tag/local-offline-preview-20261101 。源码提交和附件上传结果以 GitHub 页面为准。
+预发布地址：https://github.com/alexandresilksail/AI-Voice-Sales-Agent/releases/tag/local-offline-preview-0.1.1 。源码提交和附件上传结果以 GitHub 页面为准。
 
 ## 完成登录后提交
 
@@ -30,3 +30,4 @@ git push origin v0.1.0-local-preview
 ## 当前交付边界
 
 应用界面、商品、议价、订单及标准安装/卸载已有实际验证。真实离线语音闭环仍需要本地 Whisper/Piper 模型和 Ollama/Qwen，当前环境未完成。发布名称/说明必须保留“预览版”和此限制，不要描述为已通过完全离线语音验收。详见 TEST_REPORT.md。
+

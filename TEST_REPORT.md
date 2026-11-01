@@ -2,6 +2,10 @@
 
 Environment: actual Windows 10 build 19045, Electron 45.2.1, x64. Tests ran in this project directory. Windows 11 was not tested.
 
+## 0.1.1 targeted update
+
+TypeScript check and 6 focused migration/runtime-directory tests passed. They cover credential-only legacy settings, distinguishing corrupt settings from orders, copied manifests, missing setup manifests, hash corruption and path traversal. One focused Electron test also passed: an actual startup with legacy Gemini settings showed migration guidance and setup buttons, no order-corruption warning, and left the orders file unchanged. The earlier full suite was not repeated for this update. Local voice dependencies remain unavailable: runtime installation guidance is now bundled; no complete voice acceptance is claimed.
+
 ## Executed checks
 
 | Check | Status | Evidence / boundary |

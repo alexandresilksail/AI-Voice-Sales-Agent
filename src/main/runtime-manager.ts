@@ -1,7 +1,7 @@
 import {createHash} from 'node:crypto';
 import {createReadStream} from 'node:fs';
-import {readFile,stat} from 'node:fs/promises';
-import {resolve,sep,isAbsolute} from 'node:path';
+import {readFile} from 'node:fs/promises';
+import {resolve,sep,isAbsolute,relative} from 'node:path';
 import type {RuntimeCheck} from './local-runtime';
 
 function within(directory:string,relative:string):string {
@@ -27,11 +27,16 @@ export async function verifyRuntimeFiles(directory:string):Promise<RuntimeCheck[
 }
 export async function loadRuntimeDirectory(directory:string){
   if(typeof directory!=='string'||!isAbsolute(directory)||directory.length>500)throw new Error('Choose an absolute local runtime directory.');
-  const config=JSON.parse((await readFile(resolve(directory,'runtime-config.json'),'utf8')).replace(/^\uFEFF/,'')) as Record<string,unknown>;
+  let config:Record<string,unknown>;
+  try{config=JSON.parse((await readFile(resolve(directory,'runtime-config.json'),'utf8')).replace(/^\uFEFF/,''));}
+  catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')throw new Error('No runtime-config.json in this folder. Open the setup folder and run INSTALL-LOCAL-RUNTIME.cmd, or enter the executable/model paths manually.');throw new Error('The runtime-config.json file could not be read. Run local setup again.');}
+  if(!config||typeof config!=='object'||Array.isArray(config))throw new Error('Invalid runtime configuration.');
   const values:Record<string,string>={};
   for(const key of ['whisperPath','whisperModel','piperPath','piperModel']){
     if(typeof config[key]!=='string')throw new Error('Incomplete runtime configuration: '+key);
-    const file=resolve(config[key]);if(!file.startsWith(resolve(directory)+sep)||!(await stat(file)).isFile())throw new Error('Runtime file is outside the chosen directory or missing: '+key);
+    // Rebase older manifests copied from another PC and support new relative entries.
+    const entry=config[key];const entryRelative=isAbsolute(entry)&&typeof config.runtimeDirectory==='string'?relative(resolve(config.runtimeDirectory),resolve(entry)):entry;
+    const file=within(directory,entryRelative);
     values[key]=file;
   }
   return {runtimeDirectory:directory,...values};
